@@ -1,305 +1,232 @@
-# 📚 Collection de Scripts Bash
+# DEV.TO API Manager 🚀
 
-Ce repository contient deux scripts bash utilitaires pour Ubuntu 22.04+.
+Un gestionnaire d'API interactif en ligne de commande pour Dev.to avec authentification sécurisée et chiffrement AES-256.
 
----
+## 📋 Fonctionnalités
 
-## 📋 Table des matières
+### Lecture publique (sans authentification)
+- 📖 Lire les derniers articles
+- 🔍 Chercher des articles par tag
+- 📊 Voir les détails d'un article
+- 🏷️ Voir les tags populaires
+- 💬 Voir les commentaires
 
-- [Exercice 1 : DEV.TO API Manager](#exercice-1--devto-api-manager)
-- [Exercice 2 : Server Monitoring](#exercice-2--server-monitoring)
-- [Prérequis système](#prérequis-système)
-- [Installation](#installation)
+### Fonctions authentifiées (API Key requise)
+- ✍️ Publier un nouvel article
+- 📝 Voir vos articles
+- ✏️ Modifier un article
+- 📈 Voir vos statistiques
 
----
+### Sécurité
+- 🔐 Chiffrement AES-256-CBC de l'API Key
+- 🔑 Mot de passe maître pour déchiffrement
+- 🛡️ Validation automatique de l'API Key
+- 🔒 Authentification à la demande (smart auth)
 
-## 🚀 Exercice 1 : DEV.TO API Manager
+## 🔧 Prérequis
 
-### Description
+- Système Linux/Unix ou macOS
+- Bash 4.0+
+- Connexion Internet
 
-Gestionnaire interactif complet pour l'API Dev.to permettant de lire, publier et gérer des articles directement depuis le terminal.
-
-### Fonctionnalités
-
-#### 📖 Lecture (sans authentification)
-- Lire les derniers articles
-- Chercher des articles par tag
-- Voir les détails d'un article
-- Consulter les tags populaires
-- Voir les commentaires d'un article
-
-#### ✍️ Écriture (avec API key)
-- Publier un nouvel article
-- Voir vos articles
-- Modifier un article existant
-- Statistiques personnelles
-
-#### 🔧 Utilitaires
-- Test de connexion à l'API
-- Installation automatique des dépendances
-
-### Configuration
-
-Le script est pré-configuré avec :
-- **API Key** : `fxt7nz7zeC3mvsHHnjQycd7N`
-- **Username par défaut** : `faraj_cheniki_deea553679e`
-
-### Utilisation
-
-```bash
-# Rendre le script exécutable
-chmod +x Exercice_1.sh
-
-# Lancer le script
-./Exercice_1.sh
-```
-
-### Navigation dans le menu
-
-```
-1. Lire les derniers articles
-2. Chercher des articles par tag
-3. Voir les détails d'un article
-4. Publier un nouvel article
-5. Voir mes articles
-6. Modifier un article
-7. Voir les tags populaires
-8. Voir les commentaires d'un article
-9. Mes statistiques
-T. Tester la connexion
-0. Quitter
-```
-
-### Exemple : Publier un article
-
-1. Choisir l'option `4` dans le menu
-2. Entrer le titre de l'article
-3. Saisir le contenu en Markdown (terminer avec `END`)
-4. Ajouter des tags (optionnel)
-5. Choisir de publier ou créer un brouillon
-
----
-
-## 📊 Exercice 2 : Server Monitoring
-
-### Description
-
-Dashboard de monitoring serveur complet en temps réel, directement dans le terminal. Surveille CPU, mémoire, disque, uptime et processus avec système d'alertes.
-
-### Fonctionnalités
-
-- **Monitoring CPU** : Utilisation en temps réel avec nombre de cœurs
-- **Monitoring Mémoire** : Usage, total, libre avec indicateurs visuels
-- **Monitoring Disque** : Espace utilisé/disponible sur la partition racine
-- **Uptime** : Temps d'activité du serveur
-- **Top Processus** : Les 5 processus les plus gourmands en CPU
-- **Système d'alertes** : Notifications automatiques selon les seuils
-
-### Seuils d'alerte par défaut
-
-- **CPU** : 90%
-- **Mémoire** : 85%
-- **Disque** : 90%
-
-### Utilisation
-
-```bash
-# Rendre le script exécutable
-chmod +x Exercice_2.sh
-
-# Mode interactif (actualisation auto toutes les 5s)
-./Exercice_2.sh
-
-# Afficher une seule fois
-./Exercice_2.sh --once
-
-# Afficher uniquement le CPU
-./Exercice_2.sh --cpu
-
-# Afficher uniquement la mémoire
-./Exercice_2.sh --memory
-
-# Afficher uniquement le disque
-./Exercice_2.sh --disk
-
-# Afficher uniquement l'uptime
-./Exercice_2.sh --uptime
-
-# Afficher uniquement les alertes
-./Exercice_2.sh --alerts
-
-# Afficher uniquement les processus
-./Exercice_2.sh --processes
-
-# Afficher l'aide
-./Exercice_2.sh --help
-```
-
-### Contrôles
-
-- **Ctrl+C** : Arrêter le monitoring
-- L'actualisation automatique se fait toutes les **5 secondes** en mode interactif
-
-### Indicateurs visuels
-
-Le script utilise des barres de progression colorées :
-- 🟢 **Vert** : Utilisation normale (0-75%)
-- 🟡 **Jaune** : Utilisation élevée (75-90%)
-- 🔴 **Rouge** : Utilisation critique (>90%)
-
----
-
-## 🔧 Prérequis système
-
-### Pour les deux scripts
-
-- **OS** : Ubuntu 22.04+ (ou distribution Debian-based)
-- **Permissions** : Accès sudo pour l'installation des dépendances
-- **Connexion internet** : Requise pour Exercice_1
-
-### Dépendances
-
-Les scripts installent automatiquement les dépendances nécessaires :
-
-#### Exercice_1.sh
-- `curl` : Requêtes HTTP vers l'API
-- `jq` : Traitement des données JSON
-
-#### Exercice_2.sh
-- `bc` : Calculs mathématiques
-
----
+### Dépendances (installées automatiquement)
+- `curl` - Pour les requêtes HTTP
+- `jq` - Pour le parsing JSON
+- `openssl` - Pour le chiffrement
 
 ## 📥 Installation
 
-### Installation rapide
-
+1. Téléchargez le script:
 ```bash
-# Cloner ou télécharger les scripts
-wget https://votre-repo/Exercice_1.sh
-wget https://votre-repo/Exercice_2.sh
-
-# Rendre les scripts exécutables
-chmod +x Exercice_1.sh Exercice_2.sh
-
-# Lancer le script souhaité
-./Exercice_1.sh
+wget https://votre-url/devto-manager.sh
 # ou
-./Exercice_2.sh
+curl -O https://votre-url/devto-manager.sh
 ```
 
-### Installation des dépendances manuellement (optionnel)
-
+2. Rendez-le exécutable:
 ```bash
-# Pour Exercice_1
-sudo apt-get update
-sudo apt-get install -y curl jq
-
-# Pour Exercice_2
-sudo apt-get install -y bc
+chmod +x devto-manager.sh
 ```
 
----
-
-## 🎨 Aperçu des interfaces
-
-### Exercice_1 : DEV.TO API Manager
-```
-╔════════════════════════════════════════════════════════════════╗
-║  ★ DEV.TO API MANAGER ★                                       ║
-║  Gestionnaire Interactif pour l'API Dev.to                    ║
-╚════════════════════════════════════════════════════════════════╝
-
-╔════════════════════════════════════════════════════════════════╗
-║ MENU PRINCIPAL                                                 ║
-╠════════════════════════════════════════════════════════════════╣
-║ LECTURE (pas besoin d'authentification)                       ║
-║   1. Lire les derniers articles                               ║
-║   2. Chercher des articles par tag                            ║
-...
-```
-
-### Exercice_2 : Server Monitoring
-```
-╔════════════════════════════════════════════════════════════════════╗
-║              🖥️  SERVER MONITORING DASHBOARD                      ║
-╚════════════════════════════════════════════════════════════════════╝
-
-Serveur: ubuntu-server
-Mise à jour: 2026-01-09 14:30:45
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-💻 CPU
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-Utilisation: 45.3% [████████████████████████░░░░░░░░░░░░░░░░░░░░░░░░]
-Cœurs: 4
-```
-
----
-
-## ⚠️ Notes importantes
-
-### Exercice_1
-- L'API key fournie est à usage de démonstration
-- Pour utiliser votre propre compte, modifiez les variables `API_KEY` et `DEFAULT_USERNAME` dans le script
-- Les articles publiés sont réels et visibles sur dev.to
-
-### Exercice_2
-- Le script nécessite les permissions de lecture système
-- Les seuils d'alerte peuvent être modifiés en éditant les variables en début de script
-- Le monitoring peut consommer des ressources CPU si lancé en continu
-
----
-
-## 🐛 Dépannage
-
-### Exercice_1 : Erreur de connexion à l'API
+3. Lancez le script:
 ```bash
-# Tester la connexion
-./Exercice_1.sh
-# Choisir option T (Test de connexion)
-
-# Vérifier manuellement
-curl -s https://dev.to/api/articles?per_page=1
+./devto-manager.sh
 ```
 
-### Exercice_2 : Commande bc non trouvée
+Les dépendances seront installées automatiquement au premier lancement.
+
+## 🔑 Configuration de l'API Key
+
+### Obtenir votre API Key
+
+1. Connectez-vous sur [Dev.to](https://dev.to)
+2. Allez sur [Settings > Extensions](https://dev.to/settings/extensions)
+3. Générez une nouvelle API Key
+4. Copiez la clé
+
+### Première utilisation
+
+Au premier lancement d'une fonction nécessitant l'authentification:
+
+1. Le script vous demandera votre API Key
+2. Entrez votre clé (la saisie est masquée pour la sécurité)
+3. La clé sera validée automatiquement
+4. Vous pourrez choisir de la sauvegarder de manière chiffrée
+5. Si vous acceptez, créez un mot de passe maître (minimum 8 caractères)
+
+### Utilisations suivantes
+
+- Entrez simplement votre mot de passe maître
+- L'API Key sera déchiffrée automatiquement
+- En cas d'oubli du mot de passe, vous pourrez configurer une nouvelle clé
+
+## 🎯 Utilisation
+
+### Menu principal
+
+```
+======================================================
+  MENU PRINCIPAL
+======================================================
+
+LECTURE PUBLIQUE (pas d'authentification)
+  1. Lire les derniers articles
+  2. Chercher des articles par tag
+  3. Voir les détails d'un article
+  7. Voir les tags populaires
+  8. Voir les commentaires d'un article
+
+FONCTIONS AUTHENTIFIÉES (API key requise)
+  4. Publier un nouvel article
+  5. Voir mes articles
+  6. Modifier un article
+  9. Mes statistiques
+
+GESTION API KEY
+  K. Changer/Configurer l'API Key
+  I. Voir info API Key
+
+  0. Quitter
+```
+
+### Exemples d'utilisation
+
+#### Lire les derniers articles
 ```bash
-# Installer bc manuellement
-sudo apt-get update
-sudo apt-get install -y bc
+# Sélectionnez l'option 1
+# Choisissez le nombre d'articles (5, 10 ou 20)
 ```
 
-### Permissions refusées
+#### Chercher par tag
 ```bash
-# Vérifier les permissions
-ls -l Exercice_*.sh
-
-# Ajouter les permissions d'exécution
-chmod +x Exercice_1.sh Exercice_2.sh
+# Sélectionnez l'option 2
+# Choisissez un tag prédéfini ou entrez le vôtre
 ```
 
----
+#### Publier un article
+```bash
+# Sélectionnez l'option 4
+# Entrez le titre
+# Entrez le contenu en Markdown (tapez END pour terminer)
+# Ajoutez des tags (optionnel)
+# Choisissez de publier ou créer un brouillon
+```
 
-## 📝 Licence
+#### Voir vos articles
+```bash
+# Sélectionnez l'option 5
+# Utilisez votre username par défaut ou entrez-en un autre
+```
 
-Ces scripts sont fournis "tels quels" à des fins éducatives.
+## 🔒 Sécurité
 
----
+### Chiffrement
+- **Algorithme**: AES-256-CBC
+- **Dérivation de clé**: PBKDF2 avec 100,000 itérations
+- **Salt unique**: Généré automatiquement
+- **Permissions**: Fichiers protégés (chmod 600)
 
-## 👨‍💻 Auteur
+### Fichiers créés
+- `~/.devto_api_key.enc` - API Key chiffrée
+- `~/.devto_salt` - Salt pour le chiffrement
+- `/tmp/devto_installed` - Flag d'installation
 
-Scripts créés pour des exercices pratiques de scripting Bash sur Ubuntu 22.04.
+### Bonnes pratiques
+- ✅ Utilisez un mot de passe maître fort et unique
+- ✅ Ne partagez jamais votre API Key
+- ✅ Révoquez les clés non utilisées sur Dev.to
+- ✅ Utilisez des permissions restrictives sur les fichiers
 
----
+## 🛠️ Résolution de problèmes
+
+### L'API Key ne fonctionne pas
+- Vérifiez que la clé est toujours valide sur Dev.to
+- Assurez-vous de copier la clé complète
+- Utilisez l'option K pour reconfigurer
+
+### Mot de passe maître oublié
+- Utilisez l'option K pour configurer une nouvelle clé
+- L'ancienne clé chiffrée sera supprimée
+
+### Erreur de connexion
+- Vérifiez votre connexion Internet
+- Le timeout est fixé à 30 secondes par défaut
+- Dev.to peut être temporairement indisponible
+
+### Erreurs de parsing JSON
+- Assurez-vous que `jq` est correctement installé
+- Relancez le script pour une réinstallation
+
+## 📚 API Dev.to
+
+Ce script utilise l'[API officielle Dev.to](https://developers.forem.com/api).
+
+### Endpoints utilisés
+- `GET /api/articles` - Liste des articles
+- `GET /api/articles?tag={tag}` - Articles par tag
+- `GET /api/users/me` - Informations utilisateur
+- `POST /api/articles` - Publier un article
+
+### Rate Limiting
+- Respecte les limites de l'API Dev.to
+- Timeout de 30 secondes par requête
 
 ## 🤝 Contribution
 
-Pour toute amélioration ou rapport de bug :
-1. Testez sur Ubuntu 22.04
-2. Documentez les changements
-3. Vérifiez la compatibilité avec les deux scripts
+Les contributions sont les bienvenues! Pour contribuer:
+
+1. Fork le projet
+2. Créez une branche (`git checkout -b feature/amelioration`)
+3. Committez vos changements (`git commit -m 'Ajout fonctionnalité'`)
+4. Push vers la branche (`git push origin feature/amelioration`)
+5. Ouvrez une Pull Request
+
+## 📝 Changelog
+
+### Version 1.0
+- ✨ Authentification sécurisée avec chiffrement AES-256
+- ✨ Smart auth (API Key demandée uniquement si nécessaire)
+- ✨ Lecture d'articles sans authentification
+- ✨ Publication et gestion d'articles
+- ✨ Recherche par tags
+- ✨ Interface interactive en français
+
+## 📄 Licence
+
+Ce projet est sous licence MIT. Vous êtes libre de l'utiliser, le modifier et le distribuer.
+
+## 👤 Auteur
+
+Créé pour faciliter l'utilisation de l'API Dev.to en ligne de commande.
+
+## ⚠️ Avertissement
+
+Ce script n'est pas affilié officiellement à Dev.to. Utilisez-le de manière responsable et respectez les conditions d'utilisation de Dev.to.
 
 ---
 
-**Dernière mise à jour** : Janvier 2026
+**Note**: Assurez-vous de garder votre API Key et votre mot de passe maître en sécurité. Ne les partagez jamais et ne les commitez pas dans un dépôt public.
+
+Pour toute question ou problème, ouvrez une issue sur GitHub.
+
+Happy coding! 🚀
