@@ -1,12 +1,6 @@
 #!/bin/bash
 
-################################################################################
-# DEV.TO API MANAGER - VERSION OPTIMALE
-# API Key chiffrÃ©e - DemandÃ©e uniquement quand nÃ©cessaire
-# Garanti 100% fonctionnel sur Ubuntu 22.04
-################################################################################
-
-# Couleurs
+# Configuration des couleurs
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
@@ -14,7 +8,7 @@ PURPLE='\033[0;35m'
 CYAN='\033[0;36m'
 NC='\033[0m'
 
-# Configuration API
+# Variables de configuration
 API_KEY=""
 API_KEY_LOADED=false
 API_BASE_URL="https://dev.to/api"
@@ -22,9 +16,7 @@ DEFAULT_USERNAME="faraj_cheniki_deea553679e"
 ENCRYPTED_KEY_FILE="$HOME/.devto_api_key.enc"
 SALT_FILE="$HOME/.devto_salt"
 
-################################################################################
-# FONCTION: GÃ©nÃ©rer un salt unique
-################################################################################
+# Générer un salt unique
 generate_salt() {
     if [ ! -f "$SALT_FILE" ]; then
         openssl rand -hex 16 > "$SALT_FILE"
@@ -32,9 +24,7 @@ generate_salt() {
     fi
 }
 
-################################################################################
-# FONCTION: Chiffrer l'API Key avec AES-256
-################################################################################
+# Chiffrer l'API Key
 encrypt_api_key() {
     local key="$1"
     local password="$2"
@@ -51,9 +41,7 @@ encrypt_api_key() {
     fi
 }
 
-################################################################################
-# FONCTION: DÃ©chiffrer l'API Key
-################################################################################
+# Déchiffrer l'API Key
 decrypt_api_key() {
     local password="$1"
     
@@ -71,13 +59,11 @@ decrypt_api_key() {
     fi
 }
 
-################################################################################
-# FONCTION: Valider une API Key
-################################################################################
+# Valider l'API Key
 validate_api_key() {
     local key="$1"
     
-    print_info "Validation de l'API Key..."
+    echo "Validation de l'API Key..."
     
     local response=$(curl -s --max-time 10 \
         -H "api-key: $key" \
@@ -86,58 +72,53 @@ validate_api_key() {
     
     if echo "$response" | jq -e '.username' > /dev/null 2>&1; then
         local username=$(echo "$response" | jq -r '.username')
-        print_success "âœ… API Key valide!"
-        print_info "ConnectÃ© en tant que: @$username"
+        echo "API Key valide!"
+        echo "Connecté en tant que: @$username"
         return 0
     else
-        print_error "âŒ API Key invalide ou expirÃ©e"
+        echo "API Key invalide ou expirée"
         return 1
     fi
 }
 
-################################################################################
-# FONCTION: Charger API Key (dÃ©chiffrer si fichier existe)
-################################################################################
+# Charger l'API Key
 load_api_key_if_needed() {
-    # Si dÃ©jÃ  chargÃ©e, ne rien faire
     if [ "$API_KEY_LOADED" = true ]; then
         return 0
     fi
     
     echo ""
-    print_section "AUTHENTIFICATION REQUISE"
+    echo "AUTHENTIFICATION REQUISE"
     echo ""
     
-    # VÃ©rifier si fichier chiffrÃ© existe
     if [ -f "$ENCRYPTED_KEY_FILE" ]; then
-        print_info "ðŸ” API Key chiffrÃ©e trouvÃ©e"
+        echo "API Key chiffrée trouvée"
         echo ""
-        echo -e "${CYAN}Entrez votre mot de passe maÃ®tre pour dÃ©chiffrer:${NC}"
+        echo "Entrez votre mot de passe maître pour déchiffrer:"
         echo -n "Mot de passe (invisible): "
         read -s master_password
         echo ""
         
         if [ -z "$master_password" ]; then
-            print_error "Mot de passe requis!"
+            echo "Mot de passe requis!"
             return 1
         fi
         
         echo ""
-        print_info "DÃ©chiffrement en cours..."
+        echo "Déchiffrement en cours..."
         
         local decrypted_key=$(decrypt_api_key "$master_password")
         
         if [ $? -eq 0 ] && [ -n "$decrypted_key" ]; then
             API_KEY="$decrypted_key"
-            print_success "âœ… API Key dÃ©chiffrÃ©e avec succÃ¨s!"
+            echo "API Key déchiffrée avec succès!"
             
-            # Valider la clÃ©
             if validate_api_key "$API_KEY"; then
                 API_KEY_LOADED=true
                 pause
                 return 0
             else
-                print_warning "La clÃ© dÃ©chiffrÃ©e ne fonctionne plus"
+                echo "La clé déchiffrée ne fonctionne plus"
                 API_KEY=""
                 echo ""
                 echo -n "Voulez-vous en configurer une nouvelle? (o/n): "
@@ -150,9 +131,9 @@ load_api_key_if_needed() {
                 fi
             fi
         else
-            print_error "âŒ Mot de passe incorrect!"
+            echo "Mot de passe incorrect!"
             echo ""
-            echo -n "Voulez-vous rÃ©essayer? (o/n): "
+            echo -n "Voulez-vous réessayer? (o/n): "
             read retry
             if [ "$retry" = "o" ]; then
                 load_api_key_if_needed
@@ -162,25 +143,22 @@ load_api_key_if_needed() {
             fi
         fi
     else
-        # Pas de fichier chiffrÃ©, configurer nouvelle clÃ©
         configure_new_api_key
         return $?
     fi
 }
 
-################################################################################
-# FONCTION: Configurer une nouvelle API Key
-################################################################################
+# Configurer une nouvelle API Key
 configure_new_api_key() {
     echo ""
-    print_info "ðŸ“ Configuration d'une nouvelle API Key"
+    echo "Configuration d'une nouvelle API Key"
     echo ""
-    echo -e "${YELLOW}Comment obtenir votre API Key:${NC}"
-    echo -e "${CYAN}1. Allez sur https://dev.to/settings/extensions${NC}"
-    echo -e "${CYAN}2. GÃ©nÃ©rez une nouvelle clÃ© API${NC}"
-    echo -e "${CYAN}3. Copiez la clÃ©${NC}"
+    echo "Comment obtenir votre API Key:"
+    echo "1. Allez sur https://dev.to/settings/extensions"
+    echo "2. Générez une nouvelle clé API"
+    echo "3. Copiez la clé"
     echo ""
-    echo -e "${RED}âš ï¸  ATTENTION: Votre saisie sera masquÃ©e${NC}"
+    echo "ATTENTION: Votre saisie sera masquée"
     echo ""
     
     local new_key=""
@@ -190,9 +168,9 @@ configure_new_api_key() {
         echo ""
         
         if [ -z "$new_key" ]; then
-            print_error "API Key obligatoire!"
+            echo "API Key obligatoire!"
             echo ""
-            echo -n "Voulez-vous rÃ©essayer? (o/n): "
+            echo -n "Voulez-vous réessayer? (o/n): "
             read retry
             if [ "$retry" != "o" ]; then
                 return 1
@@ -201,7 +179,7 @@ configure_new_api_key() {
         fi
         
         echo ""
-        echo -e "${CYAN}ClÃ© saisie:${NC} ${new_key:0:8}...${new_key: -4} (masquÃ©e)"
+        echo "Clé saisie: ${new_key:0:8}...${new_key: -4} (masquée)"
         echo -n "Est-ce correct? (o/n): "
         read confirm
         
@@ -209,25 +187,24 @@ configure_new_api_key() {
             break
         fi
         echo ""
-        print_info "Veuillez ressaisir..."
+        echo "Veuillez ressaisir..."
         echo ""
     done
     
-    # Valider la nouvelle clÃ©
     echo ""
     if validate_api_key "$new_key"; then
         API_KEY="$new_key"
         
         echo ""
-        echo -e "${YELLOW}Voulez-vous sauvegarder cette clÃ© de maniÃ¨re chiffrÃ©e?${NC}"
-        echo -e "${CYAN}(RecommandÃ© - vous devrez crÃ©er un mot de passe maÃ®tre)${NC}"
+        echo "Voulez-vous sauvegarder cette clé de manière chiffrée?"
+        echo "(Recommandé - vous devrez créer un mot de passe maître)"
         echo -n "Sauvegarder? (o/n): "
         read save_choice
         
         if [ "$save_choice" = "o" ]; then
             save_encrypted_key "$API_KEY"
         else
-            print_info "ClÃ© utilisÃ©e uniquement pour cette session"
+            echo "Clé utilisée uniquement pour cette session"
         fi
         
         API_KEY_LOADED=true
@@ -235,9 +212,9 @@ configure_new_api_key() {
         pause
         return 0
     else
-        print_error "Impossible de valider l'API Key"
+        echo "Impossible de valider l'API Key"
         echo ""
-        echo -n "Voulez-vous rÃ©essayer? (o/n): "
+        echo -n "Voulez-vous réessayer? (o/n): "
         read retry
         if [ "$retry" = "o" ]; then
             configure_new_api_key
@@ -248,34 +225,32 @@ configure_new_api_key() {
     fi
 }
 
-################################################################################
-# FONCTION: Sauvegarder l'API Key chiffrÃ©e
-################################################################################
+# Sauvegarder l'API Key chiffrée
 save_encrypted_key() {
     local key="$1"
     
     echo ""
-    print_info "ðŸ’¾ CrÃ©ation du mot de passe maÃ®tre"
+    echo "Création du mot de passe maître"
     echo ""
-    echo -e "${CYAN}Ce mot de passe sera nÃ©cessaire Ã  chaque utilisation${NC}"
-    echo -e "${CYAN}Choisissez quelque chose de mÃ©morable mais sÃ©curisÃ© (min 8 caractÃ¨res)${NC}"
+    echo "Ce mot de passe sera nécessaire à chaque utilisation"
+    echo "Choisissez quelque chose de mémorable mais sécurisé (min 8 caractères)"
     echo ""
     
     local master_password=""
     local confirm_password=""
     
     while true; do
-        echo -n "Mot de passe maÃ®tre (invisible): "
+        echo -n "Mot de passe maître (invisible): "
         read -s master_password
         echo ""
         
         if [ -z "$master_password" ]; then
-            print_error "Le mot de passe ne peut pas Ãªtre vide!"
+            echo "Le mot de passe ne peut pas être vide!"
             continue
         fi
         
         if [ ${#master_password} -lt 8 ]; then
-            print_error "Le mot de passe doit faire au moins 8 caractÃ¨res!"
+            echo "Le mot de passe doit faire au moins 8 caractères!"
             continue
         fi
         
@@ -284,7 +259,7 @@ save_encrypted_key() {
         echo ""
         
         if [ "$master_password" != "$confirm_password" ]; then
-            print_error "Les mots de passe ne correspondent pas!"
+            echo "Les mots de passe ne correspondent pas!"
             echo ""
             continue
         fi
@@ -293,150 +268,107 @@ save_encrypted_key() {
     done
     
     echo ""
-    print_info "Chiffrement de l'API Key avec AES-256..."
+    echo "Chiffrement de l'API Key avec AES-256..."
     
     if encrypt_api_key "$key" "$master_password"; then
-        print_success "âœ… API Key chiffrÃ©e et sauvegardÃ©e!"
+        echo "API Key chiffrée et sauvegardée!"
         echo ""
-        print_info "Emplacement: $ENCRYPTED_KEY_FILE"
-        print_info "Algorithme: AES-256-CBC avec PBKDF2 (100,000 itÃ©rations)"
+        echo "Emplacement: $ENCRYPTED_KEY_FILE"
         return 0
     else
-        print_error "Erreur lors du chiffrement"
+        echo "Erreur lors du chiffrement"
         return 1
     fi
 }
 
-################################################################################
-# FONCTION: VÃ©rifier si API Key est nÃ©cessaire pour une fonction
-################################################################################
+# Vérifier si API Key est nécessaire
 requires_api_key() {
     local choice="$1"
     
-    # Options qui NE nÃ©cessitent PAS d'API key (lecture publique)
     case $choice in
         1|2|3|7|8|t|T)
-            return 1  # false - pas besoin
+            return 1
             ;;
         *)
-            return 0  # true - besoin
+            return 0
             ;;
     esac
 }
 
+# Affichage du titre
 print_title() {
     clear
-    echo -e "${CYAN}â•”â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•—${NC}"
-    echo -e "${CYAN}â•‘${NC}  ${GREEN}â˜…${NC} ${PURPLE}DEV.TO API MANAGER - SMART AUTH${NC} ${GREEN}â˜…${NC}                  ${CYAN}â•‘${NC}"
-    echo -e "${CYAN}â•‘${NC}  API Key demandÃ©e uniquement quand nÃ©cessaire               ${CYAN}â•‘${NC}"
-    echo -e "${CYAN}â•šâ•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•${NC}"
+    echo "========================================================"
+    echo "  DEV.TO API MANAGER - SMART AUTH"
+    echo "  API Key demandée uniquement quand nécessaire"
+    echo "========================================================"
     echo ""
 }
 
+# Affichage de section
 print_section() {
-    echo -e "${RED}â–¶${NC} ${YELLOW}$1${NC}"
-    echo -e "${RED}â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”${NC}"
+    echo ""
+    echo "== $1 =="
+    echo ""
 }
 
+# Fonctions d'affichage simplifiées
 print_success() {
-    echo -e "  ${GREEN}âœ“${NC} $1"
+    echo "✓ $1"
 }
 
 print_error() {
-    echo -e "  ${RED}âœ—${NC} $1"
+    echo "✗ $1"
 }
 
 print_info() {
-    echo -e "  ${CYAN}â„¹${NC} $1"
+    echo "ℹ $1"
 }
 
 print_warning() {
-    echo -e "  ${YELLOW}âš ${NC} $1"
+    echo "⚠ $1"
 }
 
+# Pause
 pause() {
     echo ""
-    echo -e "${YELLOW}Appuyez sur EntrÃ©e pour continuer...${NC}"
+    echo "Appuyez sur Entrée pour continuer..."
     read
 }
 
+# Installation des dépendances
 install_dependencies() {
     print_title
-    print_section "INSTALLATION DES DÃ‰PENDANCES"
-
-    echo ""
-    print_info "VÃ©rification des outils nÃ©cessaires..."
+    echo "INSTALLATION DES DÉPENDANCES"
     echo ""
 
-    if command -v openssl &> /dev/null; then
-        print_success "openssl est dÃ©jÃ  installÃ©"
-    else
-        print_info "Installation de openssl..."
+    echo "Vérification des outils nécessaires..."
+    echo ""
+
+    if ! command -v openssl &> /dev/null; then
+        echo "Installation de openssl..."
         sudo apt-get update -qq
         sudo apt-get install -y openssl -qq
-        if [ $? -eq 0 ]; then
-            print_success "openssl installÃ© avec succÃ¨s"
-        else
-            print_error "Erreur lors de l'installation de openssl"
-            return 1
-        fi
     fi
 
-    if command -v curl &> /dev/null; then
-        print_success "curl est dÃ©jÃ  installÃ©"
-    else
-        print_info "Installation de curl..."
+    if ! command -v curl &> /dev/null; then
+        echo "Installation de curl..."
         sudo apt-get update -qq
         sudo apt-get install -y curl -qq
-        if [ $? -eq 0 ]; then
-            print_success "curl installÃ© avec succÃ¨s"
-        else
-            print_error "Erreur lors de l'installation de curl"
-            return 1
-        fi
     fi
 
-    if command -v jq &> /dev/null; then
-        print_success "jq est dÃ©jÃ  installÃ©"
-    else
-        print_info "Installation de jq..."
+    if ! command -v jq &> /dev/null; then
+        echo "Installation de jq..."
         sudo apt-get install -y jq -qq
-        if [ $? -eq 0 ]; then
-            print_success "jq installÃ© avec succÃ¨s"
-        else
-            print_error "Erreur lors de l'installation de jq"
-            return 1
-        fi
     fi
 
     echo ""
-    print_success "Toutes les dÃ©pendances sont installÃ©es!"
-
-    echo ""
-    print_info "Test de connexion Ã  l'API Dev.to..."
-
-    local connection_ok=0
-
-    if curl -s --max-time 5 --head "https://dev.to" | grep -q "HTTP/"; then
-        connection_ok=1
-    fi
-
-    if [ $connection_ok -eq 0 ]; then
-        if curl -s --max-time 5 "https://dev.to/api/articles?per_page=1" | grep -q "id"; then
-            connection_ok=1
-        fi
-    fi
-
-    if [ $connection_ok -eq 1 ]; then
-        print_success "Connexion Ã  Dev.to rÃ©ussie!"
-    else
-        print_warning "Impossible de vÃ©rifier la connexion Ã  Dev.to"
-        print_info "Ce n'est pas grave, nous allons essayer quand mÃªme!"
-    fi
+    echo "Toutes les dépendances sont installées!"
 
     return 0
 }
 
+# Appel API
 api_call() {
     local method="$1"
     local endpoint="$2"
@@ -479,15 +411,16 @@ api_call() {
     fi
 }
 
+# Lire les articles
 function_read_articles() {
     print_title
-    print_section "LIRE LES DERNIERS ARTICLES"
-
+    echo "LIRE LES DERNIERS ARTICLES"
     echo ""
-    echo -e "${YELLOW}Combien d'articles voulez-vous voir?${NC}"
-    echo -e "  ${CYAN}1)${NC} 5 articles"
-    echo -e "  ${CYAN}2)${NC} 10 articles"
-    echo -e "  ${CYAN}3)${NC} 20 articles"
+
+    echo "Combien d'articles voulez-vous voir?"
+    echo "1) 5 articles"
+    echo "2) 10 articles"
+    echo "3) 20 articles"
     echo ""
     echo -n "Votre choix (1-3): "
     read choice
@@ -500,46 +433,46 @@ function_read_articles() {
     esac
 
     echo ""
-    print_info "RÃ©cupÃ©ration des $per_page derniers articles..."
+    echo "Récupération des $per_page derniers articles..."
     echo ""
 
     response=$(api_call "GET" "/articles?per_page=$per_page" "")
 
     if [ $? -eq 0 ]; then
         if echo "$response" | jq -e '. | length' > /dev/null 2>&1; then
-            print_success "Articles rÃ©cupÃ©rÃ©s avec succÃ¨s!"
+            echo "Articles récupérés avec succès!"
             echo ""
-            echo -e "${RED}â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•${NC}"
             echo "$response" | jq -r '.[] | "
-\u001b[1;36mID:\u001b[0m \(.id)
-\u001b[1;33mTitre:\u001b[0m \(.title)
-\u001b[1;32mAuteur:\u001b[0m \(.user.username)
-\u001b[1;35mRÃ©actions:\u001b[0m â¤ï¸  \(.public_reactions_count) | ðŸ’¬ \(.comments_count)
-\u001b[1;34mURL:\u001b[0m \(.url)
-\u001b[0;34mâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€\u001b[0m"'
+ID: \(.id)
+Titre: \(.title)
+Auteur: \(.user.username)
+Réactions: ♥  \(.public_reactions_count) | 💬 \(.comments_count)
+URL: \(.url)
+----------------------------------------"'
         else
-            print_error "RÃ©ponse invalide du serveur"
+            echo "Réponse invalide du serveur"
         fi
     else
-        print_error "Erreur lors de la rÃ©cupÃ©ration des articles"
+        echo "Erreur lors de la récupération des articles"
     fi
 
     pause
 }
 
+# Chercher par tag
 function_search_by_tag() {
     print_title
-    print_section "CHERCHER DES ARTICLES PAR TAG"
-
+    echo "CHERCHER DES ARTICLES PAR TAG"
     echo ""
-    echo -e "${YELLOW}Choisissez un tag:${NC}"
-    echo -e "  ${CYAN}1)${NC} javascript"
-    echo -e "  ${CYAN}2)${NC} python"
-    echo -e "  ${CYAN}3)${NC} webdev"
-    echo -e "  ${CYAN}4)${NC} tutorial"
-    echo -e "  ${CYAN}5)${NC} devops"
-    echo -e "  ${CYAN}6)${NC} beginners"
-    echo -e "  ${CYAN}7)${NC} Autre (taper le nom)"
+
+    echo "Choisissez un tag:"
+    echo "1) javascript"
+    echo "2) python"
+    echo "3) webdev"
+    echo "4) tutorial"
+    echo "5) devops"
+    echo "6) beginners"
+    echo "7) Autre (taper le nom)"
     echo ""
     echo -n "Votre choix (1-7): "
     read choice
@@ -559,53 +492,53 @@ function_search_by_tag() {
     esac
 
     echo ""
-    print_info "Recherche des articles avec le tag #$tag..."
+    echo "Recherche des articles avec le tag #$tag..."
     echo ""
 
     response=$(api_call "GET" "/articles?tag=$tag&per_page=10" "")
 
     if [ $? -eq 0 ]; then
         if echo "$response" | jq -e '. | length' > /dev/null 2>&1; then
-            print_success "Articles trouvÃ©s!"
+            echo "Articles trouvés!"
             echo ""
-            echo -e "${RED}â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•${NC}"
             echo "$response" | jq -r '.[] | "
-\u001b[1;36mID:\u001b[0m \(.id)
-\u001b[1;33mTitre:\u001b[0m \(.title)
-\u001b[1;32mAuteur:\u001b[0m \(.user.username)
-\u001b[1;35mTags:\u001b[0m \(.tag_list | join(\", \"))
-\u001b[1;34mURL:\u001b[0m \(.url)
-\u001b[0;34mâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€\u001b[0m"'
+ID: \(.id)
+Titre: \(.title)
+Auteur: \(.user.username)
+Tags: \(.tag_list | join(", "))
+URL: \(.url)
+----------------------------------------"'
         else
-            print_error "Aucun article trouvÃ©"
+            echo "Aucun article trouvé"
         fi
     else
-        print_error "Erreur lors de la recherche"
+        echo "Erreur lors de la recherche"
     fi
 
     pause
 }
 
+# Publier un article
 function_publish_article() {
     print_title
-    print_section "PUBLIER UN NOUVEL ARTICLE"
-
-    echo ""
-    echo -e "${YELLOW}Remplissez les informations de votre article:${NC}"
+    echo "PUBLIER UN NOUVEL ARTICLE"
     echo ""
 
-    echo -e "${CYAN}Titre de l'article:${NC}"
+    echo "Remplissez les informations de votre article:"
+    echo ""
+
+    echo "Titre de l'article:"
     read -e title
 
     if [ -z "$title" ]; then
-        print_error "Le titre est obligatoire!"
+        echo "Le titre est obligatoire!"
         pause
         return
     fi
 
     echo ""
-    echo -e "${CYAN}Contenu (en Markdown):${NC}"
-    echo -e "${YELLOW}(Tapez END sur une ligne seule pour terminer)${NC}"
+    echo "Contenu (en Markdown):"
+    echo "(Tapez END sur une ligne seule pour terminer)"
     body=""
     while IFS= read -r line; do
         if [ "$line" = "END" ]; then
@@ -615,19 +548,19 @@ function_publish_article() {
     done
 
     if [ -z "$body" ]; then
-        print_error "Le contenu est obligatoire!"
+        echo "Le contenu est obligatoire!"
         pause
         return
     fi
 
     echo ""
-    echo -e "${CYAN}Tags (sÃ©parÃ©s par des virgules, max 4):${NC}"
+    echo "Tags (séparés par des virgules, max 4):"
     read -e tags
 
     echo ""
-    echo -e "${YELLOW}Publier immÃ©diatement?${NC}"
-    echo -e "  ${CYAN}1)${NC} Non, crÃ©er un brouillon"
-    echo -e "  ${CYAN}2)${NC} Oui, publier maintenant"
+    echo "Publier immédiatement?"
+    echo "1) Non, créer un brouillon"
+    echo "2) Oui, publier maintenant"
     echo -n "Votre choix (1-2): "
     read pub_choice
 
@@ -649,7 +582,7 @@ function_publish_article() {
     fi
 
     echo ""
-    print_info "Publication de l'article..."
+    echo "Publication de l'article..."
     echo ""
 
     response=$(api_call "POST" "/articles" "$article_json")
@@ -659,45 +592,46 @@ function_publish_article() {
             article_id=$(echo "$response" | jq -r '.id')
             article_url=$(echo "$response" | jq -r '.url')
 
-            print_success "Article publiÃ© avec succÃ¨s!"
+            echo "Article publié avec succès!"
             echo ""
-            echo -e "${GREEN}â•”â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•—${NC}"
-            echo -e "${GREEN}â•‘${NC} ${YELLOW}ID de l'article:${NC} $article_id"
-            echo -e "${GREEN}â•‘${NC} ${YELLOW}URL:${NC} $article_url"
+            echo "================================"
+            echo "ID de l'article: $article_id"
+            echo "URL: $article_url"
             if [ "$published" = "false" ]; then
-                echo -e "${GREEN}â•‘${NC} ${CYAN}Statut:${NC} BROUILLON (non publiÃ©)"
+                echo "Statut: BROUILLON (non publié)"
             else
-                echo -e "${GREEN}â•‘${NC} ${CYAN}Statut:${NC} PUBLIÃ‰"
+                echo "Statut: PUBLIÉ"
             fi
-            echo -e "${GREEN}â•šâ•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•${NC}"
+            echo "================================"
         else
-            print_error "Erreur lors de la publication"
+            echo "Erreur lors de la publication"
         fi
     else
-        print_error "Erreur lors de la publication"
+        echo "Erreur lors de la publication"
     fi
 
     pause
 }
 
+# Mes articles
 function_my_articles() {
     print_title
-    print_section "MES ARTICLES"
-
+    echo "MES ARTICLES"
     echo ""
-    echo -e "${YELLOW}Nom d'utilisateur Dev.to:${NC}"
-    echo -e "${GREEN}Par dÃ©faut:${NC} ${PURPLE}$DEFAULT_USERNAME${NC}"
-    echo -e "${CYAN}Appuyez sur EntrÃ©e pour utiliser le dÃ©faut:${NC}"
+
+    echo "Nom d'utilisateur Dev.to:"
+    echo "Par défaut: $DEFAULT_USERNAME"
+    echo "Appuyez sur Entrée pour utiliser le défaut:"
     echo -n "Username: "
     read username
 
     if [ -z "$username" ]; then
         username="$DEFAULT_USERNAME"
-        echo -e "${GREEN}â†’ Utilisation du username par dÃ©faut: $username${NC}"
+        echo "→ Utilisation du username par défaut: $username"
     fi
 
     echo ""
-    print_info "RÃ©cupÃ©ration des articles de @$username..."
+    echo "Récupération des articles de @$username..."
     echo ""
 
     response=$(api_call "GET" "/articles?username=$username&state=all" "")
@@ -705,51 +639,51 @@ function_my_articles() {
     if [ $? -eq 0 ]; then
         if echo "$response" | jq -e '. | length' > /dev/null 2>&1; then
             count=$(echo "$response" | jq 'length')
-            print_success "$count article(s) trouvÃ©(s)!"
+            echo "$count article(s) trouvé(s)!"
             echo ""
-            echo -e "${RED}â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•${NC}"
             echo "$response" | jq -r '.[] | "
-\u001b[1;36mID:\u001b[0m \(.id)
-\u001b[1;33mTitre:\u001b[0m \(.title)
-\u001b[1;35mStatut:\u001b[0m \(if .published then \"âœ“ PubliÃ©\" else \"âŠ— Brouillon\" end)
-\u001b[1;32mRÃ©actions:\u001b[0m â¤ï¸  \(.public_reactions_count) | ðŸ’¬ \(.comments_count)
-\u001b[1;34mURL:\u001b[0m \(.url)
-\u001b[0;34mâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€\u001b[0m"'
+ID: \(.id)
+Titre: \(.title)
+Statut: \(if .published then "✓ Publié" else "✗ Brouillon" end)
+Réactions: ♥  \(.public_reactions_count) | 💬 \(.comments_count)
+URL: \(.url)
+----------------------------------------"'
         else
-            print_error "Aucun article trouvÃ©"
+            echo "Aucun article trouvé"
         fi
     else
-        print_error "Erreur lors de la rÃ©cupÃ©ration"
+        echo "Erreur lors de la récupération"
     fi
 
     pause
 }
 
+# Changer API Key
 function_change_api_key() {
     print_title
-    print_section "CHANGER L'API KEY"
+    echo "CHANGER L'API KEY"
     
     echo ""
     if [ "$API_KEY_LOADED" = true ]; then
-        echo -e "${CYAN}ClÃ© actuelle:${NC} ${API_KEY:0:8}...${API_KEY: -4} (masquÃ©e)"
+        echo "Clé actuelle: ${API_KEY:0:8}...${API_KEY: -4} (masquée)"
     else
-        print_info "Aucune API Key actuellement chargÃ©e"
+        echo "Aucune API Key actuellement chargée"
     fi
     
     echo ""
-    echo -e "${RED}âš ï¸  Voulez-vous configurer une nouvelle API Key?${NC}"
+    echo "Voulez-vous configurer une nouvelle API Key?"
     echo -n "Confirmer (o/n): "
     read confirm
     
     if [ "$confirm" != "o" ]; then
-        print_info "OpÃ©ration annulÃ©e"
+        echo "Opération annulée"
         pause
         return
     fi
     
     if [ -f "$ENCRYPTED_KEY_FILE" ]; then
         rm "$ENCRYPTED_KEY_FILE"
-        print_info "Ancienne clÃ© supprimÃ©e"
+        echo "Ancienne clé supprimée"
     fi
     
     API_KEY=""
@@ -758,24 +692,25 @@ function_change_api_key() {
     configure_new_api_key
 }
 
+# Info API Key
 function_api_key_info() {
     print_title
-    print_section "INFORMATIONS API KEY"
+    echo "INFORMATIONS API KEY"
     
     echo ""
     
     if [ "$API_KEY_LOADED" = false ]; then
-        print_warning "Aucune API Key chargÃ©e actuellement"
+        echo "Aucune API Key chargée actuellement"
         echo ""
-        print_info "L'API Key sera demandÃ©e lorsque vous utiliserez une fonction qui en a besoin"
+        echo "L'API Key sera demandée lorsque vous utiliserez une fonction qui en a besoin"
         pause
         return
     fi
     
-    echo -e "${CYAN}ClÃ© actuelle:${NC} ${API_KEY:0:8}...${API_KEY: -4} (masquÃ©e)"
+    echo "Clé actuelle: ${API_KEY:0:8}...${API_KEY: -4} (masquée)"
     echo ""
     
-    print_info "RÃ©cupÃ©ration des informations de votre compte..."
+    echo "Récupération des informations de votre compte..."
     echo ""
     
     response=$(curl -s --max-time 10 \
@@ -784,79 +719,71 @@ function_api_key_info() {
         "$API_BASE_URL/users/me")
     
     if echo "$response" | jq -e '.username' > /dev/null 2>&1; then
-        print_success "Connexion rÃ©ussie!"
+        echo "Connexion réussie!"
         echo ""
-        echo -e "${GREEN}â•”â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•—${NC}"
         echo "$response" | jq -r '"
-\u001b[1;36mUsername:\u001b[0m @\(.username)
-\u001b[1;33mNom:\u001b[0m \(.name)
-\u001b[1;35mID:\u001b[0m \(.id)
-\u001b[1;32mDate crÃ©ation:\u001b[0m \(.joined_at)
-\u001b[1;34mProfile:\u001b[0m https://dev.to/\(.username)
+Username: @\(.username)
+Nom: \(.name)
+ID: \(.id)
+Date création: \(.joined_at)
+Profile: https://dev.to/\(.username)
 "'
-        echo -e "${GREEN}â•šâ•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•${NC}"
         
         if [ -f "$ENCRYPTED_KEY_FILE" ]; then
             echo ""
-            echo -e "${CYAN}â•”â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•—${NC}"
-            echo -e "${CYAN}â•‘${NC} ${YELLOW}INFORMATIONS DE SÃ‰CURITÃ‰${NC}"
-            echo -e "${CYAN}â• â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•£${NC}"
-            echo -e "${CYAN}â•‘${NC} ${GREEN}Fichier chiffrÃ©:${NC} $ENCRYPTED_KEY_FILE"
-            echo -e "${CYAN}â•‘${NC} ${GREEN}Algorithme:${NC} AES-256-CBC"
-            echo -e "${CYAN}â•‘${NC} ${GREEN}ItÃ©rations PBKDF2:${NC} 100,000"
-            echo -e "${CYAN}â•‘${NC} ${GREEN}Permissions:${NC} $(stat -c '%a' "$ENCRYPTED_KEY_FILE")"
-            echo -e "${CYAN}â•šâ•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•${NC}"
+            echo "Fichier chiffré: $ENCRYPTED_KEY_FILE"
+            echo "Algorithme: AES-256-CBC"
         fi
     else
-        print_error "Erreur lors de la rÃ©cupÃ©ration des informations"
+        echo "Erreur lors de la récupération des informations"
     fi
     
     pause
 }
 
+# Menu principal
 show_menu() {
     print_title
     
-    # Indicateur d'authentification
     if [ "$API_KEY_LOADED" = true ]; then
-        echo -e "${GREEN}ðŸ”“ AuthentifiÃ©${NC}"
+        echo "✅ Authentifié"
     else
-        echo -e "${YELLOW}ðŸ”’ Non authentifiÃ© (certaines fonctions le demanderont)${NC}"
+        echo "🔐 Non authentifié (certaines fonctions le demanderont)"
     fi
     echo ""
 
-    echo -e "${GREEN}â•”â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•—${NC}"
-    echo -e "${GREEN}â•‘${NC} ${YELLOW}MENU PRINCIPAL${NC}                                                ${GREEN}â•‘${NC}"
-    echo -e "${GREEN}â• â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•£${NC}"
-    echo -e "${GREEN}â•‘${NC} ${CYAN}LECTURE PUBLIQUE (pas d'authentification)${NC}                     ${GREEN}â•‘${NC}"
-    echo -e "${GREEN}â•‘${NC}   ${RED}1.${NC} Lire les derniers articles                              ${GREEN}â•‘${NC}"
-    echo -e "${GREEN}â•‘${NC}   ${RED}2.${NC} Chercher des articles par tag                           ${GREEN}â•‘${NC}"
-    echo -e "${GREEN}â•‘${NC}   ${RED}3.${NC} Voir les dÃ©tails d'un article                           ${GREEN}â•‘${NC}"
-    echo -e "${GREEN}â•‘${NC}   ${RED}7.${NC} Voir les tags populaires                                ${GREEN}â•‘${NC}"
-    echo -e "${GREEN}â•‘${NC}   ${RED}8.${NC} Voir les commentaires d'un article                      ${GREEN}â•‘${NC}"
-    echo -e "${GREEN}â• â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•£${NC}"
-    echo -e "${GREEN}â•‘${NC} ${PURPLE}FONCTIONS AUTHENTIFIÃ‰ES (API key requise)${NC}                    ${GREEN}â•‘${NC}"
-    echo -e "${GREEN}â•‘${NC}   ${RED}4.${NC} Publier un nouvel article                               ${GREEN}â•‘${NC}"
-    echo -e "${GREEN}â•‘${NC}   ${RED}5.${NC} Voir mes articles                                       ${GREEN}â•‘${NC}"
-    echo -e "${GREEN}â•‘${NC}   ${RED}6.${NC} Modifier un article                                     ${GREEN}â•‘${NC}"
-    echo -e "${GREEN}â•‘${NC}   ${RED}9.${NC} Mes statistiques                                        ${GREEN}â•‘${NC}"
-    echo -e "${GREEN}â• â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•£${NC}"
-    echo -e "${GREEN}â•‘${NC} ${YELLOW}GESTION API KEY${NC}                                              ${GREEN}â•‘${NC}"
-    echo -e "${GREEN}â•‘${NC}   ${RED}K.${NC} Changer/Configurer l'API Key                            ${GREEN}â•‘${NC}"
-    echo -e "${GREEN}â•‘${NC}   ${RED}I.${NC} Voir info API Key                                       ${GREEN}â•‘${NC}"
-    echo -e "${GREEN}â• â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•£${NC}"
-    echo -e "${GREEN}â•‘${NC}   ${RED}0.${NC} Quitter                                                 ${GREEN}â•‘${NC}"
-    echo -e "${GREEN}â•šâ•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•${NC}"
+    echo "========================================================"
+    echo "  MENU PRINCIPAL"
+    echo "========================================================"
     echo ""
-    echo -e "${YELLOW}Votre choix:${NC} "
+    echo "LECTURE PUBLIQUE (pas d'authentification)"
+    echo "  1. Lire les derniers articles"
+    echo "  2. Chercher des articles par tag"
+    echo "  3. Voir les détails d'un article"
+    echo "  7. Voir les tags populaires"
+    echo "  8. Voir les commentaires d'un article"
+    echo ""
+    echo "FONCTIONS AUTHENTIFIÉES (API key requise)"
+    echo "  4. Publier un nouvel article"
+    echo "  5. Voir mes articles"
+    echo "  6. Modifier un article"
+    echo "  9. Mes statistiques"
+    echo ""
+    echo "GESTION API KEY"
+    echo "  K. Changer/Configurer l'API Key"
+    echo "  I. Voir info API Key"
+    echo ""
+    echo "  0. Quitter"
+    echo "========================================================"
+    echo ""
+    echo -n "Votre choix: "
     read choice
     echo ""
 
-    # VÃ©rifier si l'option nÃ©cessite l'API key
     if requires_api_key "$choice"; then
         if [ "$API_KEY_LOADED" = false ]; then
             if ! load_api_key_if_needed; then
-                print_error "Authentification requise mais non fournie"
+                echo "Authentification requise mais non fournie"
                 pause
                 return
             fi
@@ -866,43 +793,42 @@ show_menu() {
     case $choice in
         1) function_read_articles ;;
         2) function_search_by_tag ;;
-        3) function_read_articles ;;  # Simplification
+        3) function_read_articles ;;
         4) function_publish_article ;;
         5) function_my_articles ;;
-        6) print_warning "Fonction en dÃ©veloppement" ; pause ;;
-        7) print_warning "Fonction en dÃ©veloppement" ; pause ;;
-        8) print_warning "Fonction en dÃ©veloppement" ; pause ;;
-        9) function_my_articles ;;  # Simplification
+        6) echo "Fonction en développement" ; pause ;;
+        7) echo "Fonction en développement" ; pause ;;
+        8) echo "Fonction en développement" ; pause ;;
+        9) function_my_articles ;;
         k|K) function_change_api_key ;;
         i|I) function_api_key_info ;;
         0)
             print_title
-            echo -e "${GREEN}Merci d'avoir utilisÃ© DEV.TO API Manager!${NC}"
-            echo -e "${CYAN}Au revoir! ðŸ‘‹${NC}"
+            echo "Merci d'avoir utilisé DEV.TO API Manager!"
+            echo "Au revoir! 👋"
             echo ""
             exit 0
             ;;
         *)
-            print_error "Choix invalide!"
+            echo "Choix invalide!"
             sleep 1
             ;;
     esac
 }
 
+# Programme principal
 main() {
     if [ ! -f /tmp/devto_installed ]; then
         install_dependencies
         if [ $? -eq 0 ]; then
-            print_success "Installation terminÃ©e!"
+            echo "Installation terminée!"
             touch /tmp/devto_installed
             pause
         else
-            print_error "Erreur lors de l'installation"
+            echo "Erreur lors de l'installation"
             exit 1
         fi
     fi
-    
-    # PAS de demande d'API Key ici - on va directement au menu!
     
     while true; do
         show_menu
